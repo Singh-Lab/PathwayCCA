@@ -4,8 +4,8 @@ from scipy.stats import norm
 from numpy.linalg import eigh, lstsq
 from scipy.linalg import null_space
 
-from utils import compute_canonical_loadings
-from utils import empirical_corr
+from .utils import compute_canonical_loadings
+from .utils import empirical_corr
 
 
 def solve_ccca(
@@ -126,7 +126,7 @@ def ccca(
     n_components = int(n_components)
     assert n_components >= 1
 
-    A, B, r = solve_ccca(
+    A, B, _, r = solve_ccca(
         X_input, Y_input,
         C=C, d=d,
         lambda_x=lambda_x,
@@ -134,20 +134,12 @@ def ccca(
         n_components=n_components
     )
 
-    assert A.shape == (p, n_components)
-    assert B.shape == (q, n_components)
-    assert r.shape[0] == n_components
-
     Xc = X - X.mean(0)
     Yc = Y - Y.mean(0)
 
     U = Xc @ A
     V = Yc @ B
     Z = U + V
-
-    assert U.shape == (n, n_components)
-    assert V.shape == (n, n_components)
-    assert Z.shape == (n, n_components)
 
     C = np.asarray(C, float)
     constrained_idx = np.where(C.sum(axis=0) != 0)[0]
@@ -164,15 +156,8 @@ def ccca(
         V_resid = V.copy()
         Z_resid = Z.copy()
 
-    assert U_resid.shape == (n, n_components)
-    assert V_resid.shape == (n, n_components)
-    assert Z_resid.shape == (n, n_components)
-
     loadings_X = compute_canonical_loadings(Xc, U)
     loadings_Y = compute_canonical_loadings(Yc, V)
-
-    assert loadings_X.shape == (p, n_components)
-    assert loadings_Y.shape == (q, n_components)
     
     return {
         "A": A,

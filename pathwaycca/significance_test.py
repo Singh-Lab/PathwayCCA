@@ -2,7 +2,7 @@ import os
 import numpy as np
 from scipy.stats import norm
 
-from constrained_cca import solve_ccca,ccca
+from .constrained_cca import solve_ccca,ccca
 
 def pillai_bartlett_trace(rho, p, q):
     """
@@ -99,8 +99,8 @@ def calculate_p_value_ccca(
                     d=d,
                     n_components = n_components
                 )
-
                 perm_stats[i, :] = pillai_bartlett_trace(r, p, q)
+                
 
             except Exception as e:
                 print(f"Permutation {i+1} failed: {e}!")
