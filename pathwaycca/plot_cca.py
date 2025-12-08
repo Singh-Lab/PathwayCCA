@@ -2,12 +2,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from utils import compute_canonical_loadings
+from .utils import compute_canonical_loadings
 
 # Similar to R's plotting but with coloring with respect to gene labels
-def plt_var(U, V, load_X, load_Y,
+def plt_var(load_X, load_Y,
             d1=1, d2=2,
-            plot="Z", # TODO
             remove_last_xcols=0,
             Xnames=None, Ynames=None,
             gene_labels=None,
@@ -38,7 +37,7 @@ def plt_var(U, V, load_X, load_Y,
         df["label"] = gene_labels
         pretty = sns.color_palette("Set2", len(np.unique(gene_labels)))
         sns.scatterplot(
-            data=df,
+            data=df, 
             x=f"Dim{d1}", y=f"Dim{d2}",
             hue="label", palette=pretty,
             s=42, linewidth=0.3
@@ -116,7 +115,7 @@ def plt_indiv(U, V, d1=1, d2=2,
     plt.tight_layout()
     return plt.gca()
 
-def plt_cca(U, V, load_X, load_Y,
+def plt_cca(U, V, X_input, Y_input,
             d1=1, d2=2,
             mode="v",          # "v", "i", "b"
             var_plot="Z",
@@ -125,10 +124,19 @@ def plt_cca(U, V, load_X, load_Y,
             Xnames=None, Ynames=None,
             gene_labels=None,
             labels=None,title_v=None,title_i=None):
+    
+    if var_plot == "Z":
+        Z = U+V
+    elif var_plot == "U":
+        Z = U
+    else:
+        Z = V
+    load_X = compute_canonical_loadings(X_input,Z)
+    load_Y = compute_canonical_loadings(Y_input,Z)
 
     if mode == "v":
         return plt_var(load_X, load_Y,
-                       d1, d2, plot=var_plot,
+                       d1, d2, 
                        remove_last_xcols=remove_last_xcols,
                        Xnames=Xnames, Ynames=Ynames,
                        gene_labels=gene_labels,title=title_v)
@@ -143,7 +151,7 @@ def plt_cca(U, V, load_X, load_Y,
 
         plt.sca(axes[0])
         plt_var(load_X, load_Y,
-                d1, d2, plot=var_plot,
+                d1, d2, 
                 remove_last_xcols=remove_last_xcols,
                 Xnames=Xnames, Ynames=Ynames,
                 gene_labels=gene_labels)
