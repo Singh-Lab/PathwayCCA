@@ -13,3 +13,28 @@ def empirical_corr(U, V):
     cov = np.sum(Uc * Vc, axis=0) / (U.shape[0] - 1)
     return cov / (sdU * sdV)
 
+def compute_trace_scale(X):
+    n, p = X.shape
+    # S = np.cov(X, rowvar=False)
+    # trace_scale = np.trace(S) / p  # Your original: mean variance
+    dim_scale = np.sqrt(p / n)     # √(p/n)
+    return dim_scale  # Combined scale
+
+def snap_to_power10(x):
+    if x <= 0:
+        return 1.0
+    exponent = int(np.round(np.log10(x)))
+    return 10 ** exponent
+
+def make_lambda_grid(X, min_shift=-1, max_shift=1):
+    raw_scale = compute_trace_scale(X)
+    base_power = snap_to_power10(raw_scale)
+    grid = []
+    base_exponent = int(np.log10(base_power))
+    for shift in range(min_shift, max_shift + 1):
+        exponent = base_exponent + shift
+        grid.append(1 * 10**exponent)
+        grid.append(5 * 10**exponent)
+    return np.sort(np.array(grid)), base_power
+
+
