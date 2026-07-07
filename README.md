@@ -5,10 +5,14 @@ PathwayCCA is a framework for pathway-level association analysis between multi-o
   <img src="img/PathwayCCA_1.png" width="1000">
 </p>
 
-The repository provides a complete implementation of Regularized CCA (RCCA), Constrained CCA (CCCA), and the proposed PathwayCCA framework with resampling-based hypothesis test. 
+The repository provides a complete implementation of Regularized CCA (RCCA), Constrained CCA (CCCA) (archived), Group-regularized CCA (GRCCA) and the proposed PathwayCCA framework with resampling-based hypothesis test. 
 
 ## PathwayCCA Source Code
-`pathwaycca/constrained_cca.py`: 
+`pathwaycca/prcca_x.py`
+- Implements `solve_prcca_x` which solved CCA with group regularization, allowing users to force stronger regularization on some of the variables.
+- Implements `pareto_select` and `cv_prcca_pareto` which uses cross validation and pareto frontier to select optimal parameters in a log-scale parameter space
+
+`pathwaycca/constrained_cca.py` (archive): 
 - Implements `ccca`, which solves CCA under user-specified linear constraints on one coefficient set as proposed in the paper. 
 - Provides `solve_ccca`, a wrapper that runs the solver and returns a structured result object.
 
@@ -19,7 +23,7 @@ The repository provides a complete implementation of Regularized CCA (RCCA), Con
   - `plc_cca`: a wrapper that can contain both visulization plots.
 
 `pathwaycca/significance_test.py`
-- Implements `calculate_p_value_ccca`, which performs resampling-based significance testing to assess the statistical strength of canonical correlations.
+- Implements `calculate_p_value_prcca_x`, which performs resampling-based significance testing to assess the statistical strength of canonical correlations.
 
 ## Example Data and Code
 
