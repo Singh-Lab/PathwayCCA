@@ -1,15 +1,15 @@
 # PathwayCCA
-PathwayCCA is a framework for pathway-level association analysis between multi-omic driver alterations and gene-set expression programs. We propose this framework that extends regularized Canonical Correlation Analysis (RCCA) and tests whether multiple somatic alterations jointly affect the expression of a given pathway. To address confounding from categorical covariates, we introduce an extension of CCA that supports arbitrary linear equality constraints, thereby enabling control over covariate contributions and preventing variables such as cancer subtypes from dominating. We further develop a novel sampling-based hypothesis test that mitigates the effect of spurious correlations common in high-dimensional data. 
+PathwayCCA is a framework for pathway-level association analysis between multi-omic driver alterations and gene-set expression programs. The framework extends regularized Canonical Correlation Analysis (RCCA) and tests whether multiple somatic alterations jointly affect the expression of a given pathway. To address confounding from categorical covariates, we introduce group-weighted regularized CCA (GW-RCCA) an extension of RCCA that penalizes driver alterations and covariates separately. The covariates, such as cancer-subtype indicators, get stronger regularization, which keeps them from dominating the canonical variates. Penalty strengths are chosen by cross-validation using a Pareto criterion that balances stability against overfitting. We further develop a novel sampling-based hypothesis test that mitigates the effect of spurious correlations common in high-dimensional data.
 
 <p align="center">
   <img src="img/PathwayCCA_1.png" width="1000">
 </p>
 
-The repository provides a complete implementation of Regularized CCA (RCCA), Constrained CCA (CCCA) (archived), Group-regularized CCA (GRCCA) and the proposed PathwayCCA framework with resampling-based hypothesis test. 
+The repository provides a complete implementation of Regularized CCA (RCCA), Constrained CCA (CCCA) (archived), Group-weighted regularized CCA (GW-RCCA) and the proposed PathwayCCA framework with resampling-based hypothesis test. 
 
 ## PathwayCCA Source Code
 `pathwaycca/prcca_x.py`
-- Implements `solve_prcca_x` which solved CCA with group regularization, allowing users to force stronger regularization on some of the variables.
+- Implements `solve_prcca_x` which solved CCA with group-weighted regularization, allowing users to force stronger regularization on some of the variables.
 - Implements `pareto_select` and `cv_prcca_pareto` which uses cross validation and pareto frontier to select optimal parameters in a log-scale parameter space
 
 `pathwaycca/constrained_cca.py` (archive): 
@@ -35,4 +35,4 @@ The repository provides a complete implementation of Regularized CCA (RCCA), Con
 
 ### Example code:
 
-We offer a simple example code for the user to experiment with PathwayCCA in `pathwaycca_example_code.ipynb` using the provided example input data. Note that the outputs may differ slightly from those reported in the paper because the example input data are only subsets of the original dataset (due to GitHub storage limits).
+We offer a simple example code for the user to experiment with PathwayCCA in `pathwaycca_prcca_example_code.ipynb` using the provided example input data. Note that the outputs may differ slightly from those reported in the paper because the example input data are only subsets of the original dataset (due to GitHub storage limits).
