@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pathwaycca"
+dynamic = ["version"]
+description = "Pathway-level association analysis between multi-omic driver alterations and gene-set expression using group-weighted regularized CCA"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.21",
+    "scipy>=1.7",
+    "scikit-learn>=1.0",
+    "pandas>=1.3",
+    "matplotlib>=3.5",
+    "seaborn>=0.11",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+[project.optional-dependencies]
+examples = ["jupyter"]
+
+[project.urls]
+Homepage = "https://github.com/Singh-Lab/PathwayCCA"
+
+[tool.setuptools]
+packages = ["pathwaycca"]
+
+[tool.setuptools.dynamic]
+version = { attr = "pathwaycca.__version__" }

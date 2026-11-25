@@ -7,6 +7,32 @@ PathwayCCA is a framework for pathway-level association analysis between multi-o
 
 The repository provides a complete implementation of Regularized CCA (RCCA), Constrained CCA (CCCA) (archived), Group-weighted regularized CCA (GW-RCCA) and the proposed PathwayCCA framework with resampling-based hypothesis test. 
 
+## Installation
+
+PathwayCCA requires Python 3.9 or later. Install it directly from GitHub:
+
+```bash
+pip install git+https://github.com/Singh-Lab/PathwayCCA.git
+```
+
+Or clone the repository and install it in editable mode (recommended if you want to run the example notebook or modify the code):
+
+```bash
+git clone https://github.com/Singh-Lab/PathwayCCA.git
+cd PathwayCCA
+pip install -e .
+```
+
+The dependencies (numpy, scipy, scikit-learn, pandas, matplotlib, seaborn) are installed automatically. To also install Jupyter for the example notebook, use `pip install -e ".[examples]"`.
+
+Quick check:
+
+```python
+import pathwaycca
+from pathwaycca import solve_prcca_x, calculate_p_value_prcca_x
+print(pathwaycca.__version__)
+```
+
 ## PathwayCCA Source Code
 `pathwaycca/prcca_x.py`
 - Implements `solve_prcca_x` which solved CCA with group-weighted regularization, allowing users to force stronger regularization on some of the variables.
@@ -20,7 +46,7 @@ The repository provides a complete implementation of Regularized CCA (RCCA), Con
 - Contains visualization functions for examining CCA results:
   - `plt_var`: plots correlation-circle plots that shows canonical loadings of variables (with respect to the symmetric latent canonical variate $$Z=U+V$$).
   - `plt_indiv`: plots sample projections on canonical variates.
-  - `plc_cca`: a wrapper that can contain both visulization plots.
+  - `plt_cca`: a wrapper that can contain both visulization plots.
 
 `pathwaycca/significance_test.py`
 - Implements `calculate_p_value_prcca_x`, which performs resampling-based significance testing to assess the statistical strength of canonical correlations.
