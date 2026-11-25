@@ -141,7 +141,12 @@ def plt_cca(U, V, X_input, Y_input,
             Xnames=None, Ynames=None,
             gene_labels=None,
             labels=None,title_v=None,title_i=None):
-    
+
+    if title_v is None:
+        title_v = "Variable Correlation Plot"
+    if title_i is None:
+        title_i = "Individual Plot"
+
     if var_plot == "Z":
         Z = U+V
     elif var_plot == "U":
@@ -170,11 +175,11 @@ def plt_cca(U, V, X_input, Y_input,
                 d1, d2,
                 remove_last_xcols=remove_last_xcols,
                 Xnames=Xnames, Ynames=Ynames,
-                gene_labels=gene_labels, ax=axes[0])
+                gene_labels=gene_labels, title=title_v, ax=axes[0])
 
         plt_indiv(U, V, d1, d2,
                   plot=indiv_plot,
-                  labels=labels, ax=axes[1])
+                  labels=labels, title=title_i, ax=axes[1])
 
         plt.tight_layout()
         return fig

@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 from numpy.linalg import eigh
 from scipy.stats import pearsonr
@@ -244,6 +245,21 @@ def solve_prcca_x(
     _, q = Y.shape
     if n_components is None:
         n_components = min(p, q)
+    if n_components > min(p, q):
+        raise ValueError(
+            f"n_components={n_components} is larger than min(#X columns, #Y columns) = {min(p, q)}."
+        )
+
+    # Warn if the two penalty groups overlap or leave columns unpenalized
+    cols = np.arange(p)
+    set_x1 = set(cols[idx_x1].tolist())
+    set_x2 = set(cols[idx_x2].tolist())
+    overlap = sorted(set_x1 & set_x2)
+    missing = sorted(set(cols.tolist()) - set_x1 - set_x2)
+    if overlap:
+        warnings.warn(f"X columns {overlap} are in both idx_x1 and idx_x2; lambda_x2 is used for them.")
+    if missing:
+        warnings.warn(f"X columns {missing} are in neither idx_x1 nor idx_x2; they get no X penalty.")
 
     # === Partial regularization on X ===
     lambda_vec = np.zeros(p)

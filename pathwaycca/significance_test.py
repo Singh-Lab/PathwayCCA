@@ -72,8 +72,10 @@ def calculate_p_value_prcca_x(
     tune_lambda=False
 ):
     """
-    Permutation-based significance test for Constrained CCA using 
-    Pillai–Bartlett trace statistics.
+    Resampling-based significance test for PathwayCCA (group-weighted
+    regularized CCA) using Pillai–Bartlett trace statistics. The null
+    distribution is built by refitting the model on random gene sets of the
+    same size as the pathway, drawn from Full_Y_input.
 
     Parameters
     ----------
@@ -83,13 +85,18 @@ def calculate_p_value_prcca_x(
     observed_corrs : array-like, canonical correlations r from original data
                      Use the 4th output of solve_prcca_x (r_emp, empirical
                      correlations), not prcca_x(...)["r"]; the null uses r_emp.
-    n_perm : number of bootstrap permutations
+    n_perm : number of random gene-set resamples for the null distribution
     cache_base : base directory to store cached perm statistics
     file_name : subfolder name
                 Note: cached null statistics are reused by name. The cache
                 key includes file_name, Y size, n_perm and the lambdas. Use a unique
                 file_name for each different X / pathway / setting.
-    i_choice : statistic index to test. 
+    i_choice : statistic index to test. Index i uses the cumulative
+               Pillai trace r_1^2 + ... + r_{i+1}^2.
+               "first" -> i = 0 (first canonical variate pair only)
+               "min"   -> i with the smallest Gaussian p-value (default)
+               "max"   -> i with the largest observed statistic
+               int     -> that index 
     use_gaussian : if True, use Gaussian approximation
                    if False, compute empirical permutation p-value
 
@@ -116,6 +123,13 @@ def calculate_p_value_prcca_x(
         )
 
     stat0_vec = pillai_bartlett_trace(observed_corrs, p, q)
+
+    # Check i_choice before running any resamples
+    is_int_choice = isinstance(i_choice, (int, np.integer)) and not isinstance(i_choice, bool)
+    if not (i_choice in ("first", "min", "max") or is_int_choice):
+        raise ValueError("i_choice must be 'first', 'min', 'max', or an integer index.")
+    if is_int_choice and not (0 <= i_choice < len(stat0_vec)):
+        raise ValueError(f"i_choice={i_choice} is out of range (0 to {len(stat0_vec) - 1}).")
 
     Y_size = q
     cache_dir = os.path.join(cache_base, file_name)
@@ -214,17 +228,23 @@ def calculate_p_value_prcca_x(
         raise RuntimeError("All permutations failed. Cannot compute p-value.")
     np.save(cache_file, perm_stats)
     print(f"Saved permutation statistics to {cache_file}")
-    if i_choice == "min":
+    if i_choice == "first":
+        idx = 0
+    elif i_choice == "min":
         mu_vec = perm_stats.mean(0)
         sigma_vec = perm_stats.std(0, ddof=1)
-        tmp_p = 1 - norm.cdf(stat0_vec, loc=mu_vec, scale=sigma_vec)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            tmp_p = norm.sf(stat0_vec, loc=mu_vec, scale=sigma_vec)
+        if np.all(np.isnan(tmp_p)):
+            raise ValueError(
+                "i_choice='min' failed: null statistics have zero variance for every index. "
+                "Use i_choice='first' or an integer index with use_gaussian=False."
+            )
         idx = int(np.nanargmin(tmp_p))
     elif i_choice == "max":
         idx = int(np.nanargmax(stat0_vec))
-    elif isinstance(i_choice, int):
-        idx = i_choice
-        if idx < 0 or idx >= len(stat0_vec):
-            raise ValueError(f"i_choice={i_choice} is out of range.")
+    elif is_int_choice:
+        idx = int(i_choice)
     else:
         raise ValueError("i_choice must be 'first', 'min', 'max', or an integer index.")
 
@@ -234,7 +254,12 @@ def calculate_p_value_prcca_x(
     if use_gaussian:
         mu = perm_vec.mean()
         sigma = perm_vec.std(ddof=1)
-        p_value = 1 - norm.cdf(stat0, loc=mu, scale=sigma)
+        if not np.isfinite(sigma) or sigma == 0:
+            raise ValueError(
+                "Gaussian approximation is undefined: the null statistics have zero "
+                "variance (or too few valid resamples). Use use_gaussian=False."
+            )
+        p_value = norm.sf(stat0, loc=mu, scale=sigma)
         return {
             "stat0": float(stat0),
             "p_value": float(p_value),

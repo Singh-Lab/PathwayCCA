@@ -145,7 +145,7 @@ def ccca(
         constrained_idx = np.array([], dtype=int)
     else:
         C = np.atleast_2d(np.asarray(C, float))
-        constrained_idx = np.where(C.sum(axis=0) != 0)[0]
+        constrained_idx = np.where(np.any(C != 0, axis=0))[0]
 
     if len(constrained_idx) > 0:
         X_sub = Xc[:, constrained_idx]
