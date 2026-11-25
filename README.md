@@ -9,28 +9,90 @@ The repository provides a complete implementation of Regularized CCA (RCCA), Con
 
 ## Installation
 
-PathwayCCA requires Python 3.9 or later. Install it directly from GitHub:
+### Requirements
+
+PathwayCCA is a pure-Python package with no compiled code, so it is platform-independent (Linux, macOS, Windows); it has been tested on macOS. It requires Python 3.9 or later and the following packages, which `pip` installs automatically. Both the minimum and the latest versions below were tested:
+
+| Dependency | Minimum version | Latest version tested |
+|---|---|---|
+| Python | 3.9 | 3.13 |
+| numpy | 1.21 | 2.5 |
+| scipy | 1.7 | 1.18 |
+| scikit-learn | 1.0 | 1.9 |
+| pandas | 1.4 | 3.1 |
+| matplotlib | 3.5 | 3.11 |
+| seaborn | 0.11 | 0.13 |
+
+Optional: `jupyter` to run the example notebook. You also need `git` to install from GitHub or clone the repository.
+
+### Option 1: Install with pip from GitHub
 
 ```bash
 pip install git+https://github.com/Singh-Lab/PathwayCCA.git
 ```
 
-Or clone the repository and install it in editable mode (recommended if you want to run the example notebook or modify the code):
+### Option 2: Clone the repository (to run the example notebook)
+
+Cloning downloads the example data (about 100 MB).
 
 ```bash
 git clone https://github.com/Singh-Lab/PathwayCCA.git
 cd PathwayCCA
-pip install -e .
+pip install -e ".[examples]"
 ```
 
-The dependencies (numpy, scipy, scikit-learn, pandas, matplotlib, seaborn) are installed automatically. To also install Jupyter for the example notebook, use `pip install -e ".[examples]"`.
+`-e` installs in editable mode, so changes to the source code take effect without reinstalling. `[examples]` also installs Jupyter.
 
-Quick check:
+### Option 3: Install into a new conda environment
+
+We recommend a separate environment to avoid conflicts with other packages:
+
+```bash
+conda create -n pathwaycca python=3.11
+conda activate pathwaycca
+pip install git+https://github.com/Singh-Lab/PathwayCCA.git
+```
+
+Or with Python's built-in `venv`:
+
+```bash
+python3 -m venv pathwaycca-env
+source pathwaycca-env/bin/activate      # on Windows: pathwaycca-env\Scripts\activate
+pip install git+https://github.com/Singh-Lab/PathwayCCA.git
+```
+
+### Verify the installation
 
 ```python
+import numpy as np
 import pathwaycca
-from pathwaycca import solve_prcca_x, calculate_p_value_prcca_x
+
 print(pathwaycca.__version__)
+
+rng = np.random.default_rng(0)
+X = rng.normal(size=(50, 5))   # 3 driver features + 2 covariates
+Y = rng.normal(size=(50, 8))   # 8 pathway genes
+A, B, r, r_emp = pathwaycca.solve_prcca_x(
+    X, Y, idx_x1=[0, 1, 2], idx_x2=[3, 4],
+    lambda_x1=1, lambda_x2=1000, lambda_y=1, n_components=2,
+)
+print(r_emp)   # two canonical correlations
+```
+
+If this prints the version number and two correlations, the installation works. Installation typically takes under a minute.
+
+### Running the example notebook
+
+After Option 2, start Jupyter from the repository folder and open `example_code/pathwaycca_prcca_example_code.ipynb`:
+
+```bash
+jupyter notebook
+```
+
+### Uninstall
+
+```bash
+pip uninstall pathwaycca
 ```
 
 ## PathwayCCA Source Code
