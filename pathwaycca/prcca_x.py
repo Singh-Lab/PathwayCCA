@@ -1,8 +1,5 @@
 import numpy as np
-import os
-from scipy.stats import norm
-from numpy.linalg import eigh, lstsq
-from scipy.linalg import null_space
+from numpy.linalg import eigh
 from scipy.stats import pearsonr
 from sklearn.model_selection import KFold
 
@@ -12,18 +9,9 @@ from .utils import empirical_corr
 def canonical_test_score(X_test, Y_test, A, B, n_components=3):
     """
     Mean absolute canonical correlation on held-out data.
+    Kept for backward compatibility; same as canonical_score with n_components=3 default.
     """
-    U = X_test @ A[:, :n_components]
-    V = Y_test @ B[:, :n_components]
-
-    scores = []
-    for k in range(n_components):
-        if np.std(U[:, k]) == 0 or np.std(V[:, k]) == 0:
-            scores.append(0.0)
-        else:
-            scores.append(abs(pearsonr(U[:, k], V[:, k])[0]))
-
-    return float(np.mean(scores))
+    return canonical_score(X_test, Y_test, A, B, n_components=n_components)
 
 def cv_prcca(
     X,
@@ -249,8 +237,8 @@ def solve_prcca_x(
     Y = np.asarray(Y_input, dtype=float)
 
     # Mean center
-    X -= X.mean(axis=0)
-    Y -= Y.mean(axis=0)
+    X = X - X.mean(axis=0)
+    Y = Y - Y.mean(axis=0)
 
     n, p = X.shape
     _, q = Y.shape
@@ -306,6 +294,12 @@ def prcca_x(
     lambda_y=1e-6,
     n_components=None
 ):
+    """
+    Note: the returned "r" is the singular values of the regularized
+    problem, not the empirical correlations of the canonical variates.
+    For calculate_p_value_prcca_x, pass the 4th output of solve_prcca_x
+    (r_emp) as observed_corrs.
+    """
 
     X = np.asarray(X_input, float)
     Y = np.asarray(Y_input, float)

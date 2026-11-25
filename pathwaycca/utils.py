@@ -1,8 +1,15 @@
 import numpy as np
 
 def compute_canonical_loadings(Xmat, Umat):
-    Xstd = (Xmat - Xmat.mean(0)) / Xmat.std(0, ddof=1)
-    Ustd = (Umat - Umat.mean(0)) / Umat.std(0, ddof=1)
+    # Constant columns get loading 0 instead of NaN
+    Xmat = np.asarray(Xmat, dtype=float)
+    Umat = np.asarray(Umat, dtype=float)
+    sdX = Xmat.std(0, ddof=1)
+    sdU = Umat.std(0, ddof=1)
+    sdX = np.where(sdX == 0, 1.0, sdX)
+    sdU = np.where(sdU == 0, 1.0, sdU)
+    Xstd = (Xmat - Xmat.mean(0)) / sdX
+    Ustd = (Umat - Umat.mean(0)) / sdU
     return (Xstd.T @ Ustd) / (Xmat.shape[0] - 1)
 
 def empirical_corr(U, V):

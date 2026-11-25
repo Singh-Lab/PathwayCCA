@@ -1,6 +1,4 @@
 import numpy as np
-import os
-from scipy.stats import norm
 from numpy.linalg import eigh, lstsq
 from scipy.linalg import null_space
 
@@ -26,8 +24,8 @@ def solve_ccca(
     Y = np.asarray(Y_input, dtype=float)
 
     # Mean Center
-    X -= X.mean(axis=0)
-    Y -= Y.mean(axis=0)
+    X = X - X.mean(axis=0)
+    Y = Y - Y.mean(axis=0)
 
     n, p = X.shape
     _, q = Y.shape
@@ -126,7 +124,9 @@ def ccca(
     n_components = int(n_components)
     assert n_components >= 1
 
-    A, B, _, r = solve_ccca(
+    # "r" is the empirical correlation of the canonical variates (as used by the
+    # significance test); "r_svd" is the singular value from the solver.
+    A, B, r_svd, r = solve_ccca(
         X_input, Y_input,
         C=C, d=d,
         lambda_x=lambda_x,
@@ -141,8 +141,11 @@ def ccca(
     V = Yc @ B
     Z = U + V
 
-    C = np.asarray(C, float)
-    constrained_idx = np.where(C.sum(axis=0) != 0)[0]
+    if C is None or d is None or np.size(C) == 0:
+        constrained_idx = np.array([], dtype=int)
+    else:
+        C = np.atleast_2d(np.asarray(C, float))
+        constrained_idx = np.where(C.sum(axis=0) != 0)[0]
 
     if len(constrained_idx) > 0:
         X_sub = Xc[:, constrained_idx]
@@ -163,6 +166,7 @@ def ccca(
         "A": A,
         "B": B,
         "r": r,
+        "r_svd": r_svd,
         "U": U,
         "V": V,
         "Z": Z,

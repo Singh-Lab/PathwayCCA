@@ -11,7 +11,7 @@ def plt_var(load_X, load_Y,
             Xnames=None, Ynames=None,
             gene_labels=None,
             radius=1.0,
-            title="Variable Correlation Plot"):
+            title="Variable Correlation Plot", ax=None):
 
     LX = pd.DataFrame(load_X)
     LX.columns = [f"Dim{i+1}" for i in range(LX.shape[1])] 
@@ -23,7 +23,10 @@ def plt_var(load_X, load_Y,
         if Xnames is not None:
             Xnames = Xnames[:-remove_last_xcols]
 
-    plt.figure(figsize=(7.5, 7))
+    if ax is None:
+        plt.figure(figsize=(7.5, 7))
+    else:
+        plt.sca(ax)
     theta = np.linspace(0, 2*np.pi, 500)
     plt.plot(np.cos(theta)*radius, np.sin(theta)*radius, color="black", lw=1.3)
     plt.plot(0.5*np.cos(theta), 0.5*np.sin(theta),
@@ -90,7 +93,18 @@ def plt_var(load_X, load_Y,
 
 def plt_indiv(U, V, d1=1, d2=2,
               plot="Z", labels=None,
-              title="Individual Plot"):
+              title="Individual Plot", ax=None):
+
+    U = np.asarray(U)
+    V = np.asarray(V)
+    if plot == "Z":
+        scores = U + V
+    elif plot == "U":
+        scores = U
+    elif plot == "V":
+        scores = V
+    else:
+        raise ValueError("plot must be 'Z', 'U', or 'V'")
 
     x = scores[:, d1-1]
     y = scores[:, d2-1]
@@ -99,7 +113,10 @@ def plt_indiv(U, V, d1=1, d2=2,
     if labels is None:
         labels = np.arange(1, n + 1)
 
-    plt.figure(figsize=(6.5, 6))
+    if ax is None:
+        plt.figure(figsize=(6.5, 6))
+    else:
+        plt.sca(ax)
     plt.scatter(x, y, c="gray", s=45, alpha=0.7)
 
     for i in range(n):
@@ -149,17 +166,15 @@ def plt_cca(U, V, X_input, Y_input,
     elif mode == "b":
         fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-        plt.sca(axes[0])
         plt_var(load_X, load_Y,
-                d1, d2, 
+                d1, d2,
                 remove_last_xcols=remove_last_xcols,
                 Xnames=Xnames, Ynames=Ynames,
-                gene_labels=gene_labels)
+                gene_labels=gene_labels, ax=axes[0])
 
-        plt.sca(axes[1])
         plt_indiv(U, V, d1, d2,
                   plot=indiv_plot,
-                  labels=labels)
+                  labels=labels, ax=axes[1])
 
         plt.tight_layout()
         return fig

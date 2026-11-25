@@ -81,9 +81,14 @@ def calculate_p_value_prcca_x(
     Y_input : array (n × q)
     Full_Y_input : array (n × Q)  -- full gene pool for sampling
     observed_corrs : array-like, canonical correlations r from original data
+                     Use the 4th output of solve_prcca_x (r_emp, empirical
+                     correlations), not prcca_x(...)["r"]; the null uses r_emp.
     n_perm : number of bootstrap permutations
     cache_base : base directory to store cached perm statistics
     file_name : subfolder name
+                Note: cached null statistics are reused by name. The cache
+                key includes file_name, Y size, n_perm and the lambdas. Use a unique
+                file_name for each different X / pathway / setting.
     i_choice : statistic index to test. 
     use_gaussian : if True, use Gaussian approximation
                    if False, compute empirical permutation p-value
@@ -102,6 +107,13 @@ def calculate_p_value_prcca_x(
     Y_input = np.asarray(Y_input)
     Full_Y_input = np.asarray(Full_Y_input)
     p, q = X_input.shape[1], Y_input.shape[1]
+    if n_components is None:
+        n_components = min(p, q)
+    if np.size(observed_corrs) != n_components:
+        raise ValueError(
+            f"observed_corrs has {np.size(observed_corrs)} values but n_components={n_components}; "
+            "pass the canonical correlations from solve_prcca_x with the same n_components."
+        )
 
     stat0_vec = pillai_bartlett_trace(observed_corrs, p, q)
 
